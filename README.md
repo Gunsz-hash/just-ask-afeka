@@ -34,7 +34,7 @@ From the project root:
 pip install -r requirements.txt
 ```
 
-**Environment variables (recommended):** copy `.env.example` to a file named `.env` in the same directory and fill in real values (JWT secret, internal n8n token, Gemini key). The project also runs **without** a `.env` file, using built-in development defaults.
+**Environment variables:** copy `.env.example` to a file named `.env` in the project root and replace the placeholder values with your local configuration. The backend requires `SECRET_KEY` and `N8N_SECRET_TOKEN` to start.
 
 ### 2) Frontend (React)
 
@@ -54,7 +54,7 @@ Note: `node_modules` is intentionally excluded from the repository — `npm inst
 3. Configure credentials:
    - **Google Gemini (PaLM) API** — paste your API key. The key is required in the chat-model node and both embedding nodes.
    - **MongoDB** — connection to `mongodb://localhost:27017`, database `ask_database`.
-4. In the auto-tag workflow: make sure the `x-n8n-token` header sent back to the API matches the `N8N_SECRET_TOKEN` value in your `.env` (or the built-in default if no `.env` is used).
+4. In the auto-tag workflow, replace `YOUR_N8N_SECRET_TOKEN` with the same value configured as `N8N_SECRET_TOKEN` in your local `.env` file.
 5. **Activate both workflows** — the Active toggle at the top right must be ON, and the upload Webhook node must be enabled (not greyed out).
 
 ## Running — Startup Order
@@ -144,6 +144,4 @@ For security reasons, the Admin role cannot be selected during registration (Mas
 └── uploads/             # Runtime user uploads (kept empty in the repo)
 ```
 
-## Submission Notes
 
-Per the course guidelines, the submitted archive **excludes** build and install artifacts: `node_modules`, `dist`, `__pycache__`, `.idea`, as well as `uploads` content (user data) and `.env` (secrets) — all excluded via `.gitignore`. To build the project from source, follow the Installation and Running sections above.
