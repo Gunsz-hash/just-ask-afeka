@@ -1,0 +1,133 @@
+{
+  "name": "Auto-Tag Questions (NLP)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auto-tag",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "a1b2c3d4-0001-4aaa-8bbb-000000000001",
+      "name": "Auto-Tag Webhook",
+      "webhookId": "auto-tag-ask-community"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a tagging engine for a student community forum at Afeka College.\n\nGiven the question text below, select ALL matching elective-course tags ONLY from this exact list (Hebrew names must match exactly):\n[\"פיתוח משחקים\", \"מבוא לבינה מלאכותית\", \"אבטחת סייבר\", \"פיתוח מאובטח\", \"רשתות נוירונים\", \"תקשורת אלקטרו אופטית\", \"אתיקה רפואית\", \"מכניקת שבר\", \"ניהול המוצר\", \"כלכלת מערכות מידע\"]\n\nRules:\n- Return ONLY a JSON array of strings, nothing else. No markdown, no explanation.\n- Only include tags clearly relevant to the question content.\n- If no tag matches, return [].\n\nQuestion text:\n{{ $json.body.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [220, 0],
+      "id": "a1b2c3d4-0002-4aaa-8bbb-000000000002",
+      "name": "Extract Tags (Gemini)"
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [220, 200],
+      "id": "a1b2c3d4-0003-4aaa-8bbb-000000000003",
+      "name": "Gemini Tagger Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FTxshsnafxoV26eX",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the model output safely into a clean tags array\nconst raw = ($json.text ?? $json.output ?? '').toString();\nconst clean = raw.replace(/```json|```/g, '').trim();\nlet tags = [];\ntry {\n  const parsed = JSON.parse(clean);\n  if (Array.isArray(parsed)) tags = parsed.filter(t => typeof t === 'string');\n} catch (e) {\n  tags = [];\n}\nreturn [{ json: { tags } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0],
+      "id": "a1b2c3d4-0004-4aaa-8bbb-000000000004",
+      "name": "Parse Tags"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=http://127.0.0.1:8000/api/questions/{{ $('Auto-Tag Webhook').first().json.body.id }}/tags",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-n8n-token",
+              "value": "YOUR_N8N_SECRET_TOKEN"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ tags: $json.tags }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0],
+      "id": "a1b2c3d4-0005-4aaa-8bbb-000000000005",
+      "name": "Update Tags in API"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Auto-Tag Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Tags (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Tagger Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Tags (Gemini)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Tags (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Parse Tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Tags": {
+      "main": [
+        [
+          {
+            "node": "Update Tags in API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

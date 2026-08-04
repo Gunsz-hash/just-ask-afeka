@@ -1,0 +1,14 @@
+# A.S.K Backend - Python dependencies
+# התקנה: pip install -r requirements.txt
+
+fastapi
+uvicorn[standard]
+motor
+pydantic
+passlib[bcrypt]
+bcrypt==4.0.1
+PyJWT
+httpx
+python-multipart
+python-dotenv
+requests
