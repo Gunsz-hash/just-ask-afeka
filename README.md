@@ -1,32 +1,137 @@
 # Just A.S.K — Afeka Shared Knowledge 🎓
 
-A web-based student community platform featuring a Q&A forum with automatic NLP tagging, an industry job board, study-material sharing, a second-hand marketplace, private messaging, an admin panel — and a RAG-powered AI agent that answers questions based on the college's official regulations.
+Just A.S.K is a full-stack student community platform that combines traditional community features with AI-powered tools for academic information and student collaboration.
 
-## Architecture
+The platform includes a Q&A forum, personalized content ranking, private messaging, study-material sharing, an industry board, a second-hand marketplace, automatic AI tagging, and a RAG assistant that answers questions using official college regulations.
 
-| Component | Technology | Port |
-|---|---|---|
-| Frontend | React (Vite) | 5173 |
-| Backend API | FastAPI (Python) | 8000 |
-| Database | MongoDB | 27017 |
-| Automation & AI | n8n (auto-tagging + RAG agent) | 5678 |
-| LLM & Embeddings | Google Gemini API | — |
+## 🎥 Demo
 
-Main flow: React ↔ FastAPI ↔ MongoDB, with FastAPI calling n8n for automatic tagging of new questions and for AI-agent queries. The RAG agent retrieves answers from a vector knowledge base built from the college's regulation PDFs.
+▶ **[Watch the project demo](docs/assets/Just_ASK_Portfolio_Demo.mp4)**
 
-## Prerequisites
+The demo showcases:
 
-Install the following before setup:
+- Personalized feed ranking
+- RAG-based answers from uploaded regulation documents
+- AI-powered automatic question tagging
+- n8n workflow orchestration
 
-1. **Python 3.10+** — https://www.python.org/downloads
-2. **Node.js 18+ (includes npm)** — https://nodejs.org
-3. **MongoDB Community Server** (running locally on port 27017) — https://www.mongodb.com/try/download/community
-4. **n8n** — `npm install -g n8n` (or run via Docker)
-5. **Google Gemini API key** (free tier available) — https://aistudio.google.com/apikey
+## ✨ Key Features
 
-## Installation
+- **Student Q&A Forum** — users can publish questions, reply, and interact with the student community.
+- **Personalized Feed** — content is ranked using relevance signals such as academic track and course-related tags.
+- **AI Auto-Tagging** — new questions are automatically analyzed and tagged using an n8n + Gemini workflow.
+- **RAG Assistant** — answers academic questions using information retrieved from uploaded official regulation PDFs.
+- **Private Messaging** — direct communication between users.
+- **Industry Board** — graduates can publish job opportunities and industry-related content.
+- **Study Material Sharing** — students can upload and share academic resources.
+- **Second-Hand Marketplace** — users can publish items for sale.
+- **Admin Panel** — moderation, reports, user management, and knowledge-base administration.
+- **Authentication & Authorization** — JWT-based authentication with server-side role and ownership checks.
 
-### 1) Backend (FastAPI)
+## 🛠 Tech Stack
+
+| Area | Technology |
+| --- | --- |
+| Frontend | React, Vite, JavaScript |
+| Backend | Python, FastAPI |
+| Database | MongoDB |
+| AI / LLM | Google Gemini |
+| RAG | Embeddings + Vector Store |
+| Automation | n8n |
+| Authentication | JWT + Bcrypt |
+| API Communication | REST, Axios, httpx |
+
+## 🏗 Architecture
+
+```text
+React Frontend
+      │
+      │ REST API
+      ▼
+FastAPI Backend
+      │
+      ├──────────────► MongoDB
+      │
+      ▼
+     n8n
+      │
+      ├──────────────► Gemini
+      └──────────────► RAG / Vector Store
+```
+
+The React frontend communicates with the FastAPI backend through REST APIs.
+
+FastAPI handles authentication, authorization, application logic, MongoDB access, and communication with the automation layer.
+
+n8n orchestrates the AI workflows used for automatic question tagging and RAG-based question answering.
+
+### RAG Flow
+
+```text
+Regulation PDF
+      ↓
+Document Chunks
+      ↓
+Embeddings
+      ↓
+Vector Store
+
+User Question
+      ↓
+Question Embedding
+      ↓
+Relevant Chunks Retrieved
+      ↓
+Gemini + Retrieved Context
+      ↓
+Grounded Answer
+```
+
+Uploaded regulation documents are split into chunks and converted into embeddings.
+
+When a user asks a question, relevant document chunks are retrieved from the vector store and supplied to Gemini as context before the response is generated.
+
+## 🔐 Security Highlights
+
+The backend includes several application-security measures:
+
+- JWT-based authentication for protected endpoints.
+- Server-side authorization and role checks.
+- Password hashing with Bcrypt.
+- User identity derived from the authenticated token rather than trusted directly from client input.
+- Ownership validation for user-generated resources.
+- Admin role assignment is restricted from normal registration.
+- Knowledge-base uploads require server-side Admin authorization.
+- File uploads use an allowed-extension list.
+- Regex-based search input is escaped before being used in database queries.
+- CORS is restricted to the frontend origin.
+- Sensitive configuration is loaded from environment variables rather than committed to the repository.
+
+## 🚀 Production Considerations
+
+The project was designed primarily as an academic capstone and local development environment.
+
+For a production deployment, the main improvements would include:
+
+- Replacing the in-memory vector store with persistent vector storage.
+- Strengthening authentication and network isolation between internal services.
+- Expanding automated test coverage.
+- Adding stronger file-content validation.
+- Adding centralized logging, monitoring, and deployment infrastructure.
+
+## ▶️ Running the Project
+
+### Prerequisites
+
+Install:
+
+- Python 3.10+
+- Node.js 18+
+- MongoDB Community Server
+- n8n
+- Google Gemini API credentials
+
+### 1. Backend
 
 From the project root:
 
@@ -34,114 +139,154 @@ From the project root:
 pip install -r requirements.txt
 ```
 
-**Environment variables:** copy `.env.example` to a file named `.env` in the project root and replace the placeholder values with your local configuration. The backend requires `SECRET_KEY` and `N8N_SECRET_TOKEN` to start.
+Copy:
 
-### 2) Frontend (React)
+```text
+.env.example
+```
+
+to:
+
+```text
+.env
+```
+
+and configure the required environment variables.
+
+Then start the backend:
+
+```bash
+python main.py
+```
+
+The API runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+### 2. Frontend
 
 ```bash
 cd frontend
 npm install
+npm run dev
 ```
 
-Note: `node_modules` is intentionally excluded from the repository — `npm install` recreates it from `package.json`.
+The frontend runs at:
 
-### 3) n8n — Importing the Workflows
+```text
+http://localhost:5173
+```
 
-1. Run `n8n` and open the UI at http://localhost:5678
-2. Import the two workflow files from the `n8n_workflows/` folder (Workflows → Import from File):
-   - `PDF_RAG_Chatbot_with_Gemini.json` — the RAG agent + document ingestion
-   - `Auto_Tag_Questions_NLP.json` — automatic question tagging
-3. Configure credentials:
-   - **Google Gemini (PaLM) API** — paste your API key. The key is required in the chat-model node and both embedding nodes.
-   - **MongoDB** — connection to `mongodb://localhost:27017`, database `ask_database`.
-4. In the auto-tag workflow, replace `YOUR_N8N_SECRET_TOKEN` with the same value configured as `N8N_SECRET_TOKEN` in your local `.env` file.
-5. **Activate both workflows** — the Active toggle at the top right must be ON, and the upload Webhook node must be enabled (not greyed out).
+### 3. MongoDB
 
-## Running — Startup Order
+Make sure MongoDB is running locally on:
 
-In four separate terminals, in this order:
+```text
+mongodb://localhost:27017
+```
+
+Database:
+
+```text
+ask_database
+```
+
+### 4. n8n
+
+Start n8n:
 
 ```bash
-# 1. Database (if not running as a service)
-mongod
-
-# 2. Automation
 n8n
-
-# 3. Backend (from the project root)
-python main.py
-# Server starts at http://127.0.0.1:8000
-
-# 4. Frontend
-cd frontend
-npm run dev
-# App starts at http://localhost:5173
 ```
 
-⚠️ **Important:** the frontend must run on port **5173** exactly (the server's CORS policy allows only that origin). If Vite reports a different port, close duplicate instances and restart.
+Then open:
 
-## Seeding Demo Data
+```text
+http://localhost:5678
+```
 
-Once the server is running, run once:
+Import the workflows from:
+
+```text
+n8n_workflows/
+```
+
+Included workflows:
+
+```text
+PDF_RAG_Chatbot_with_Gemini.json
+Auto_Tag_Questions_NLP.json
+```
+
+Configure the required Gemini and MongoDB credentials, then activate the workflows.
+
+## 🌱 Demo Data
+
+Once the backend and database are running:
 
 ```bash
 python seed.py
 ```
 
-The script creates 8 demo users (password for all: `password123`), forum questions with replies, and an industry job post by an alumnus. Example login: `dana@student.afeka.ac.il`.
+This creates demo users, forum questions, replies, and an industry post.
 
-### Creating an Admin User
+Example account:
 
-For security reasons, the Admin role cannot be selected during registration (Mass-Assignment prevention). Admins are appointed manually in the database:
-
-1. Register a regular user on the site (e.g., `admin@afeka.ac.il`).
-2. In a terminal:
-   ```javascript
-   mongosh
-   use ask_database
-   db.users.updateOne({email: "admin@afeka.ac.il"}, {$set: {role: "Admin"}})
-   ```
-3. Log out and log back in (so the token includes the new role).
-
-## Loading Regulations into the AI Agent
-
-1. Log in as admin → **"Knowledge Base"** tab → upload a regulation PDF.
-2. The file is sent to the server (admin permission check), forwarded to n8n, split into chunks, embedded (Gemini Embeddings), and stored in the vector store.
-3. Any user can now ask the **"A.S.K Agent"** questions about the regulations.
-
-⚠️ **Important note:** the vector store in this version is In-Memory (inside the n8n process) — a deliberate choice for a development/demo environment. **After every n8n restart, the PDFs must be re-uploaded.** In production, the store would be replaced with a dedicated vector database (e.g., Qdrant or MongoDB Atlas Vector Search).
-
-## Security — Implemented & Known Limitations
-
-**Implemented:**
-- JWT-based authentication (120-minute expiry) on all sensitive endpoints; author identity is derived from the token server-side (prevents impersonation and IDOR).
-- Passwords hashed with Bcrypt; the password field is excluded from every API response.
-- Registration with the Admin role is blocked (Mass-Assignment prevention); admins are appointed manually only.
-- File-extension whitelist for uploads; search-input sanitization (ReDoS prevention).
-- Knowledge-base document uploads are routed exclusively through the server (`POST /api/knowledge/upload`): server-side admin enforcement plus an internal token to n8n — preventing unauthorized document injection (data poisoning).
-- CORS restricted to the frontend origin; system secrets managed via environment variables.
-
-**Known limitations (planned for a future version):**
-- The n8n webhooks themselves do not enforce authentication on the n8n side (the node accepts any request); the effective protection is that uploads from the system pass through FastAPI with a permission check. A production version would add Header Auth on the n8n Webhook node (natively supported) to verify the internal token, and the webhook would not be exposed outside the internal network.
-- In-Memory vector store (see the note above).
-
-## Project Structure
-
+```text
+dana@student.afeka.ac.il
 ```
-├── main.py              # FastAPI server — all endpoints
-├── seed.py              # Demo-data seeding script
-├── requirements.txt     # Python dependencies
-├── .env.example         # Environment-variables template
-├── n8n_workflows/       # n8n workflow JSONs (import into n8n)
+
+Demo password:
+
+```text
+password123
+```
+
+These credentials are intended for local demo data only.
+
+## 📚 Loading Documents into the RAG Assistant
+
+1. Log in with an Admin account.
+2. Open the **Knowledge Base** section.
+3. Upload a regulation PDF.
+4. The backend authorizes the request and sends the document to the automation workflow.
+5. The document is processed into chunks and embeddings.
+6. Users can then ask the **A.S.K Agent** questions based on the uploaded regulations.
+
+The current vector store is in-memory, so uploaded knowledge must be loaded again after restarting n8n.
+
+## 📁 Project Structure
+
+```text
+├── main.py
+│   └── FastAPI backend and REST endpoints
+│
+├── seed.py
+│   └── Demo-data seeding
+│
+├── requirements.txt
+│   └── Python dependencies
+│
+├── .env.example
+│   └── Environment-variable template
+│
+├── n8n_workflows/
 │   ├── PDF_RAG_Chatbot_with_Gemini.json
 │   └── Auto_Tag_Questions_NLP.json
+│
 ├── frontend/
 │   ├── package.json
 │   └── src/
-│       ├── pages/       # Login, Register, Forum, Home
-│       ├── components/  # FeedTab, InboxTab, AdminPanel, AiAgentTab...
-│       └── utils/       # Shared constants
-└── uploads/             # Runtime user uploads (kept empty in the repo)
+│       ├── pages/
+│       ├── components/
+│       └── utils/
+│
+├── docs/
+│   └── assets/
+│       └── Just_ASK_Portfolio_Demo.mp4
+│
+└── uploads/
+    └── Runtime user uploads
 ```
-
-
