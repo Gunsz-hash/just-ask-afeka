@@ -6,9 +6,9 @@ The platform includes a Q&A forum, personalized content ranking, private messagi
 
 ## 🎥 Demo
 
-[▶ Watch the project demo](docs/assets/Just_ASK_Portfolio_Demo.mp4)
+[![Just A.S.K Demo Preview](docs/assets/demo-preview.jpg)](https://raw.githubusercontent.com/Gunsz-hash/just-ask-afeka/main/docs/assets/Just_ASK_Portfolio_Demo.mp4)
 
-![Just A.S.K Demo Preview](docs/assets/demo-preview.jpg)
+▶ **Click the preview above to watch the project demo**
 
 ▶ **Click the preview above to watch the full demo**
 
