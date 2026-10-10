@@ -6,7 +6,10 @@ The platform includes a Q&A forum, personalized content ranking, private messagi
 
 ## 🎥 Demo
 
-▶ **[Watch the project demo](docs/assets/Just_ASK_Portfolio_Demo.mp4)**
+[![Watch the Just A.S.K demo](docs/assets/demo-preview.jpg)](docs/assets/Just_ASK_Portfolio_Demo.mp4)
+
+▶ **Click the preview above to watch the full demo**
+
 
 The demo showcases:
 
